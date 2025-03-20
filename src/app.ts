@@ -2,7 +2,7 @@ import middleware from '#middlewares/middlewares.js';
 import express from 'express';
 
 const app = express();
-let port = process.env.PORT ?? '9001';
+const port = process.env.PORT ?? '9001';
 
 app.get('/', middleware);
 
