@@ -1,5 +1,6 @@
 import { verifyToken } from '#middlewares/authentication.js';
 import authRouter from '#routes/authRoutes.js';
+import dashboardRouter from '#routes/dashboardRoutes.js';
 import cors from 'cors';
 import express from 'express';
 
@@ -13,9 +14,7 @@ app.use('/auth', authRouter);
 
 app.use(verifyToken);
 
-app.use('/dashboard', (_req, res) => {
-  res.json({ success: true });
-});
+app.use('/dashboard', dashboardRouter);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
