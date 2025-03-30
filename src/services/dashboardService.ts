@@ -1,9 +1,9 @@
 import { getTiktokSheetData } from './googleSheetsAPI.js';
 
 interface DashboardData {
-  displayData: string[][];
   graphData: GraphData[];
   headers: string[];
+  tableData: string[][];
 }
 
 interface GraphData {
@@ -14,23 +14,14 @@ interface GraphData {
 
 const aggregateTiktokSheetData = (sheetData: string[][]): DashboardData => {
   const [headers, ...rows] = sheetData;
-  const graphData: GraphData[] = [];
-  const displayData: string[][] = [];
+  const tableData: string[][] = rows;
+  const graphData: GraphData[] = rows.map((row: string[]) => ({
+    date: row[0],
+    impressions: Number(row[4].replaceAll(',', '')),
+    spend: Number(row[1].replace('$', '').replaceAll(',', ''))
+  }));
 
-  rows.forEach((row: string[]) => {
-    // Convert date from 'M/D/YYYY' to 'YYYY-MM-DD'
-    const [month, day, year] = row[0].split('/');
-    const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-
-    // Convert spend and impressions to numbers
-    const spend = Number(row[1].replace('$', '').replaceAll(',', ''));
-    const impressions = Number(row[4].replaceAll(',', ''));
-
-    graphData.push({ date: formattedDate, impressions, spend });
-    displayData.push([formattedDate, ...row.slice(1)]);
-  });
-
-  return { displayData, graphData, headers };
+  return { graphData, headers, tableData };
 };
 
 export const getTiktokDashboardData = async (): Promise<DashboardData> => {
