@@ -1,5 +1,5 @@
 import { ErrorCode } from './error.code.enums.js';
-import { ErrorOptions } from './error.types.js';
+import { ErrorOptions, InternalServerErrorOptions } from './error.types.js';
 
 export class BaseError extends Error {
   public readonly code: ErrorCode;
@@ -16,7 +16,7 @@ export class BaseError extends Error {
       code = ErrorCode.INTERNAL_SERVER_ERROR,
       message = 'Internal Server Error',
       statusCode = 500,
-      toLog = statusCode < 500 // Log 500+ errors by default
+      toLog = statusCode >= 500 // Log 500+ errors by default
     } = options;
 
     super(message);
@@ -100,7 +100,6 @@ export class ValidationError extends BadRequestError {
     });
   }
 }
-
 export class FormatError extends ValidationError {
   constructor(options: ErrorOptions | string) {
     super({
@@ -109,7 +108,6 @@ export class FormatError extends ValidationError {
     });
   }
 }
-
 export class UncaughtError extends BaseError {
   private readonly originalError: unknown;
 
@@ -132,8 +130,29 @@ export class UncaughtError extends BaseError {
     return this.originalError;
   }
 }
-
 export class GoogleSheetsUncaughtError extends UncaughtError {}
+
+export class InternalServerError extends BaseError {
+  public readonly logMessage: string;
+
+  constructor(options: InternalServerErrorOptions | string) {
+    const parsedOptions = typeof options === 'string' ? { logMessage: options } : options;
+
+    // Extract logMessage before passing to super
+    const { logMessage = 'Internal Server Error', ...restOptions } = parsedOptions;
+
+    super({
+      ...restOptions,
+      code: ErrorCode.INTERNAL_SERVER_ERROR,
+      message: 'Internal Server Error', // Client-facing message
+      statusCode: 500,
+      toLog: true
+    });
+
+    // Store logMessage separately for logging
+    this.logMessage = logMessage;
+  }
+}
 
 export class MissingParameterError extends ValidationError {
   constructor(options: ErrorOptions | string) {
@@ -154,7 +173,6 @@ export class NotFoundError extends BaseError {
     });
   }
 }
-
 export class RateLimitError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({

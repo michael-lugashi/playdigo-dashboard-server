@@ -25,6 +25,14 @@ export interface ErrorResponse {
   message: string;
 }
 
+export interface InternalServerErrorOptions extends ErrorOptions {
+  logMessage: string;
+}
+
+export interface UncaughtErrorOptions extends ErrorOptions {
+  originalError: unknown;
+}
+
 /**
  * Types of original error details that can be extracted from UncaughtError
  */
