@@ -1,5 +1,4 @@
-import { FormatError, MissingParameterError, ValidationError } from '#core/errors/custom.errors.js';
-import { ErrorCode } from '#core/errors/error.code.enums.js';
+import { MissingParameterError, ValidationError } from '#core/errors/custom.errors.js';
 import { createMiddleware } from '#core/validation/validation.services.js';
 import { z, ZodError } from 'zod';
 

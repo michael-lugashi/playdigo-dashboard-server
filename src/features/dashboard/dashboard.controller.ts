@@ -1,15 +1,11 @@
 import { getTiktokDashboardData } from '#features/dashboard/dashboard.services.js';
-import express from 'express';
+import { ExpressHandler } from '#interfaces/global.types.js';
 
-const dashboardRouter = express.Router();
-
-dashboardRouter.get('/data', async (_req, res, next) => {
+export const getDashboardData: ExpressHandler = async (_req, res, next) => {
   try {
     const dashboardData = await getTiktokDashboardData();
     res.json(dashboardData);
   } catch (err) {
     next(err);
   }
-});
-
-export default dashboardRouter;
+};
