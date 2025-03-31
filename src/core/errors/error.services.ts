@@ -1,16 +1,5 @@
 import { BaseError, UncaughtError } from './custom.errors.js';
-
-type UncaughtOriginalErrorDetails =
-  | boolean
-  | null
-  | number
-  | string
-  | undefined
-  | {
-      message: string;
-      name: string;
-      stack?: string;
-    };
+import { UncaughtOriginalErrorDetails } from './error.types.js';
 
 export const getOriginalErrorDetails = (error: UncaughtError): UncaughtOriginalErrorDetails => {
   const originalError = error.getOriginalError();

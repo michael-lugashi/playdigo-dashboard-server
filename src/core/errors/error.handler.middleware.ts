@@ -2,12 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 
 import { logger } from '../logger/logger.config.js';
 import { BaseError, UncaughtError } from './custom.errors.js';
-import { ErrorCode } from './error.code.enums.js';
 import { getOriginalErrorDetails, normalizeError } from './error.services.js';
-interface ErrorResponse {
-  code: ErrorCode;
-  message: string;
-}
+import { ErrorResponse } from './error.types.js';
 
 export const errorHandler = (
   err: unknown,

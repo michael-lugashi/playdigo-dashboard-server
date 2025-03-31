@@ -1,11 +1,5 @@
 import { ErrorCode } from './error.code.enums.js';
-
-interface ErrorOptions {
-  code?: ErrorCode;
-  message?: string;
-  statusCode?: number;
-  toLog?: boolean;
-}
+import { ErrorOptions } from './error.types.js';
 
 export class BaseError extends Error {
   public readonly code: ErrorCode;
