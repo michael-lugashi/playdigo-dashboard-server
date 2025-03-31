@@ -81,17 +81,6 @@ export class DatabaseError extends BaseError {
   }
 }
 
-export class ExternalServiceError extends BaseError {
-  constructor(options: ErrorOptions | string) {
-    super({
-      ...(typeof options === 'string' ? { message: options } : options),
-      code: ErrorCode.EXTERNAL_SERVICE_ERROR,
-      statusCode: 500,
-      toLog: true
-    });
-  }
-}
-
 export class ForbiddenError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
@@ -121,14 +110,30 @@ export class FormatError extends ValidationError {
   }
 }
 
-export class GoogleSheetsError extends ExternalServiceError {
-  constructor(options: ErrorOptions | string) {
+export class UncaughtError extends BaseError {
+  private readonly originalError: unknown;
+
+  constructor(error: unknown) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
-      code: ErrorCode.GOOGLE_SHEETS_ERROR
+      code: ErrorCode.UNCAUGHT_ERROR,
+      message: 'Internal Server Error',
+      statusCode: 500,
+      toLog: true
     });
+
+    this.originalError = error;
+
+    if (error instanceof Error) {
+      this.stack = error.stack;
+    }
+  }
+
+  public getOriginalError(): unknown {
+    return this.originalError;
   }
 }
+
+export class GoogleSheetsUncaughtError extends UncaughtError {}
 
 export class MissingParameterError extends ValidationError {
   constructor(options: ErrorOptions | string) {
@@ -158,30 +163,5 @@ export class RateLimitError extends BaseError {
       statusCode: 429,
       toLog: false
     });
-  }
-}
-
-export class UncaughtError extends BaseError {
-  private readonly originalError: unknown;
-
-  constructor(error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error occurred';
-
-    super({
-      code: ErrorCode.UNCAUGHT_ERROR,
-      message,
-      statusCode: 500,
-      toLog: true
-    });
-
-    this.originalError = error;
-
-    if (error instanceof Error) {
-      this.stack = error.stack;
-    }
-  }
-
-  public getOriginalError(): unknown {
-    return this.originalError;
   }
 }
