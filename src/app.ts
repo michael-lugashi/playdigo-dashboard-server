@@ -1,3 +1,4 @@
+import errorHandler from '#core/errors/error.handler.middleware.js';
 import authRouter from '#features/auth/auth.controller.js';
 import { verifyToken } from '#features/auth/auth.middleware.js';
 import dashboardRouter from '#features/dashboard/dashboard.controller.js';
@@ -15,6 +16,8 @@ app.use('/auth', authRouter);
 app.use(verifyToken);
 
 app.use('/dashboard', dashboardRouter);
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
