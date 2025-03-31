@@ -31,10 +31,10 @@ export class BaseError extends Error {
 export class UnauthorizedError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
       code: ErrorCode.UNAUTHORIZED,
       statusCode: 401,
-      toLog: false
+      toLog: false,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
@@ -42,8 +42,8 @@ export class UnauthorizedError extends BaseError {
 export class AuthenticationError extends UnauthorizedError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
-      code: ErrorCode.AUTHENTICATION_FAILED
+      code: ErrorCode.AUTHENTICATION_FAILED,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
@@ -51,10 +51,10 @@ export class AuthenticationError extends UnauthorizedError {
 export class BadRequestError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
       code: ErrorCode.BAD_REQUEST,
       statusCode: 400,
-      toLog: false
+      toLog: false,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
@@ -62,10 +62,10 @@ export class BadRequestError extends BaseError {
 export class ConflictError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
       code: ErrorCode.CONFLICT,
       statusCode: 409,
-      toLog: false
+      toLog: false,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
@@ -73,10 +73,10 @@ export class ConflictError extends BaseError {
 export class DatabaseError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
       code: ErrorCode.DATABASE_ERROR,
       statusCode: 500,
-      toLog: true
+      toLog: true,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
@@ -84,30 +84,14 @@ export class DatabaseError extends BaseError {
 export class ForbiddenError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
       code: ErrorCode.FORBIDDEN,
       statusCode: 403,
-      toLog: false
+      toLog: false,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
 
-export class ValidationError extends BadRequestError {
-  constructor(options: ErrorOptions | string) {
-    super({
-      ...(typeof options === 'string' ? { message: options } : options),
-      code: ErrorCode.INVALID_INPUT
-    });
-  }
-}
-export class FormatError extends ValidationError {
-  constructor(options: ErrorOptions | string) {
-    super({
-      ...(typeof options === 'string' ? { message: options } : options),
-      code: ErrorCode.INVALID_FORMAT
-    });
-  }
-}
 export class UncaughtError extends BaseError {
   private readonly originalError: unknown;
 
@@ -131,22 +115,19 @@ export class UncaughtError extends BaseError {
   }
 }
 export class GoogleSheetsUncaughtError extends UncaughtError {}
-
 export class InternalServerError extends BaseError {
   public readonly logMessage: string;
 
   constructor(options: InternalServerErrorOptions | string) {
     const parsedOptions = typeof options === 'string' ? { logMessage: options } : options;
-
-    // Extract logMessage before passing to super
     const { logMessage = 'Internal Server Error', ...restOptions } = parsedOptions;
 
     super({
-      ...restOptions,
       code: ErrorCode.INTERNAL_SERVER_ERROR,
       message: 'Internal Server Error', // Client-facing message
       statusCode: 500,
-      toLog: true
+      toLog: true,
+      ...restOptions
     });
 
     // Store logMessage separately for logging
@@ -154,11 +135,20 @@ export class InternalServerError extends BaseError {
   }
 }
 
+export class ValidationError extends BadRequestError {
+  constructor(options: ErrorOptions | string) {
+    super({
+      code: ErrorCode.INVALID_INPUT,
+      ...(typeof options === 'string' ? { message: options } : options)
+    });
+  }
+}
+
 export class MissingParameterError extends ValidationError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
-      code: ErrorCode.MISSING_PARAMETER
+      code: ErrorCode.MISSING_PARAMETER,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
@@ -166,20 +156,20 @@ export class MissingParameterError extends ValidationError {
 export class NotFoundError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
       code: ErrorCode.NOT_FOUND,
       statusCode: 404,
-      toLog: false
+      toLog: false,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }
 export class RateLimitError extends BaseError {
   constructor(options: ErrorOptions | string) {
     super({
-      ...(typeof options === 'string' ? { message: options } : options),
       code: ErrorCode.RATE_LIMIT_EXCEEDED,
       statusCode: 429,
-      toLog: false
+      toLog: false,
+      ...(typeof options === 'string' ? { message: options } : options)
     });
   }
 }

@@ -1,6 +1,6 @@
 import errorHandler from '#core/errors/error.handler.middleware.js';
-import authRouter from '#features/auth/auth.controller.js';
 import { verifyToken } from '#features/auth/auth.middleware.js';
+import authRouter from '#features/auth/auth.routes.js';
 import dashboardRouter from '#features/dashboard/dashboard.controller.js';
 import cors from 'cors';
 import express from 'express';
