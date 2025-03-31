@@ -1,17 +1,10 @@
-import { NextFunction, Request, Response } from 'express';
-
 import { logger } from '../logger/logger.config.js';
 import { BaseError, UncaughtError } from './custom.errors.js';
 import { getOriginalErrorDetails, normalizeError } from './error.services.js';
-import { ErrorResponse } from './error.types.js';
+import { ErrorHandlerMiddleware, ErrorResponse } from './error.types.js';
 
-export const errorHandler = (
-  err: unknown,
-  req: Request,
-  res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _next: NextFunction
-): void => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const errorHandler: ErrorHandlerMiddleware = (err, req, res, _next): void => {
   const error: BaseError = normalizeError(err);
 
   const logTitle = `${error.name}: ${error.message}`;
@@ -41,3 +34,5 @@ export const errorHandler = (
 
   res.status(error.statusCode).json(response);
 };
+
+export default errorHandler;

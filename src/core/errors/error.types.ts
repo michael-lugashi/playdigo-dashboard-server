@@ -1,4 +1,11 @@
+import { NextFunction, Request, Response } from 'express';
+
 import { ErrorCode } from './error.code.enums.js';
+
+/**
+ * Middleware function type for handling errors in Express applications
+ */
+export type ErrorHandlerMiddleware = (err: unknown, req: Request, res: Response, next: NextFunction) => void;
 
 /**
  * Options for creating error instances
@@ -16,7 +23,6 @@ export interface ErrorOptions {
 export interface ErrorResponse {
   code: ErrorCode;
   message: string;
-  stack?: string;
 }
 
 /**
