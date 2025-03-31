@@ -1,4 +1,4 @@
-import { ExpressHandler } from '#@types/global.js';
+import { ExpressHandler } from '#interfaces/global.types.js';
 import jwt from 'jsonwebtoken';
 
 export const verifyToken: ExpressHandler = (req, _res, next) => {

@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 
-import authorize from './googleSheetsAuth.js';
+import authorize from './google.sheets.auth.js';
 
 export const getTiktokSheetData = async (): Promise<string[][]> => {
   const auth = await authorize();

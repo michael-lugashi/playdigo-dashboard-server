@@ -1,4 +1,4 @@
-import { authenticate } from '#services/authService.js';
+import { authenticate } from '#features/auth/auth.services.js';
 import express from 'express';
 import { z } from 'zod';
 

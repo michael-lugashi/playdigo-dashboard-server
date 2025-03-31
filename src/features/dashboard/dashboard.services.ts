@@ -1,4 +1,4 @@
-import { getTiktokSheetData } from './googleSheetsAPI.js';
+import { getTiktokSheetData } from '../../core/google.sheets/google.sheets.api.js';
 
 interface DashboardData {
   graphData: GraphData[];

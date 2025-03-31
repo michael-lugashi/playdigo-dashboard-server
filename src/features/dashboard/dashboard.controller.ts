@@ -1,4 +1,4 @@
-import { getTiktokDashboardData } from '#services/dashboardService.js';
+import { getTiktokDashboardData } from '#features/dashboard/dashboard.services.js';
 import express from 'express';
 
 const dashboardRouter = express.Router();
