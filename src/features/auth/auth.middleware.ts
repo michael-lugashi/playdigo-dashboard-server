@@ -1,3 +1,4 @@
+import { AuthenticationError, UncaughtError } from '#core/errors/custom.errors.js';
 import { ExpressHandler } from '#interfaces/global.types.js';
 import jwt from 'jsonwebtoken';
 
@@ -6,21 +7,21 @@ export const verifyToken: ExpressHandler = (req, _res, next) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-      throw new Error('Needs Login.');
+      throw new AuthenticationError('Needs Login.');
     }
 
     jwt.verify(token, process.env.JWT_AUTH_TOKEN_SECRET);
     next();
-  } catch (err) {
+  } catch (err: unknown) {
     if (!(err instanceof Error)) {
-      throw new Error(String(err));
+      throw new UncaughtError(err);
     }
 
     switch (err.name) {
       case 'JsonWebTokenError':
-        throw new Error('Invalid Bearer Token. Needs Login.');
+        throw new AuthenticationError('Invalid Bearer Token. Needs Login.');
       case 'TokenExpiredError': {
-        throw new Error('Session Expired. Needs Login.');
+        throw new AuthenticationError('Session Expired. Needs Login.');
       }
       default:
         throw err;
