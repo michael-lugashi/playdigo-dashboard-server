@@ -1,7 +1,8 @@
-import { GoogleSheetsUncaughtError, InternalServerError } from '#core/errors/custom.errors.js';
+import { BaseError, GoogleSheetsUncaughtError, InternalServerError } from '#core/errors/custom.errors.js';
 import { authenticate } from '@google-cloud/local-auth';
 import fs from 'fs/promises';
 import { Auth, google } from 'googleapis';
+import path from 'path';
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
@@ -9,8 +10,8 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 // created automatically when the authorization flow completes for the first
 // time.
 
-const TOKEN_PATH = './google.sheets.credentials.json';
-const CREDENTIALS_PATH = './google.sheets.credentials.json';
+const TOKEN_PATH = path.join(process.cwd(), 'src/core/google.sheets/google.sheets.token.json');
+const CREDENTIALS_PATH = path.join(process.cwd(), 'src/core/google.sheets/google.sheets.credentials.json');
 
 interface InstalledCredentials {
   client_id: string;
@@ -32,14 +33,21 @@ async function authorize(): Promise<Auth.OAuth2Client> {
     await saveCredentials(newClient);
     return newClient;
   } catch (error) {
+    if (error instanceof BaseError) {
+      throw error;
+    }
     throw new GoogleSheetsUncaughtError(error);
   }
 }
 
 async function loadSavedCredentialsIfExist(): Promise<Auth.OAuth2Client | null> {
-  const content = await fs.readFile(TOKEN_PATH, 'utf-8');
-  const credentials = JSON.parse(content) as Auth.JWTInput;
-  return google.auth.fromJSON(credentials) as Auth.OAuth2Client;
+  try {
+    const content = await fs.readFile(TOKEN_PATH, 'utf-8');
+    const credentials = JSON.parse(content) as Auth.JWTInput;
+    return google.auth.fromJSON(credentials) as Auth.OAuth2Client;
+  } catch {
+    return null;
+  }
 }
 
 async function saveCredentials(client: Auth.OAuth2Client): Promise<void> {
