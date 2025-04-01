@@ -4,6 +4,7 @@ import authRouter from '#features/auth/auth.routes.js';
 import dashboardRouter from '#features/dashboard/dashboard.routes.js';
 import cors from 'cors';
 import express from 'express';
+import 'source-map-support/register';
 
 const app = express();
 const port = process.env.PORT;
