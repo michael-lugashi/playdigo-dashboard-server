@@ -1,5 +1,5 @@
 node_modules
 .env
 dist
-googleSheetsCredentials.json
-googleSheetsToken.json
+google.sheets.credentials.json
+google.sheets.token.json
