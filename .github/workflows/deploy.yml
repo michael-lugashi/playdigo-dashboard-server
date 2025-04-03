@@ -21,12 +21,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd playdigo-dashboard-server
-            # Update the .env file with contents from GitHub Secret
             echo "${{ secrets.ENV_FILE_CONTENTS }}" > .env
-            # Pull latest code from Git repository (if applicable)
             git pull origin main
-            # Optionally, reinstall dependencies and build
             npm install
             npm run build
-            # Restart your app using PM2
             pm2 restart my-app || env-cmd -f .env pm2 start dist/src/app.js --name my-app
