@@ -21,7 +21,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd playdigo-dashboard-server
-            echo "${{ secrets.ENV_FILE_CONTENTS }}" > .env
+            cat <<EOF > .env
+${{ secrets.ENV_FILE_CONTENTS }}
+EOF
             git pull origin main
             npm install
             npm run build
