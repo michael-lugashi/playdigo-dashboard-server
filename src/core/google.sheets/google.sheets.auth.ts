@@ -40,15 +40,20 @@ async function authorize(): Promise<Auth.OAuth2Client> {
   }
 }
 
-async function loadSavedCredentialsIfExist(): Promise<Auth.OAuth2Client | null> {
-  try {
-    const content = await fs.readFile(TOKEN_PATH, 'utf-8');
-    const credentials = JSON.parse(content) as Auth.JWTInput;
-    return google.auth.fromJSON(credentials) as Auth.OAuth2Client;
-  } catch {
-    return null;
-  }
-}
+const loadSavedCredentialsIfExist = (() => {
+  let cachedCredentials: Auth.OAuth2Client | null = null;
+  return async (): Promise<Auth.OAuth2Client | null> => {
+    try {
+      if (cachedCredentials) return cachedCredentials;
+      const content = await fs.readFile(TOKEN_PATH, 'utf-8');
+      const credentials = JSON.parse(content) as Auth.JWTInput;
+      cachedCredentials = google.auth.fromJSON(credentials) as Auth.OAuth2Client;
+      return cachedCredentials;
+    } catch {
+      return null;
+    }
+  };
+})();
 
 async function saveCredentials(client: Auth.OAuth2Client): Promise<void> {
   const content = await fs.readFile(CREDENTIALS_PATH, 'utf-8');
