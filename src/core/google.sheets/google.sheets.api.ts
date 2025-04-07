@@ -86,6 +86,14 @@ export const generateUserFunctions = (): UserFunctions => {
   };
 };
 
+const { getUsers } = generateUserFunctions();
+
+export const getUserByEmail = async (email: string): Promise<null | User> => {
+  const users = await getUsers();
+  const user = users.find((user) => user.email === email);
+  return user ?? null;
+};
+
 const processSheetData = (sheet: sheets_v4.Schema$CellData[][]): CellValue[][] =>
   sheet.reduce<CellValue[][]>((acc, rowData) => {
     const row = rowData.reduce<CellValue[]>((rowAcc, cell) => {

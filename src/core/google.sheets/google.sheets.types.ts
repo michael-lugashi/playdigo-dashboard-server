@@ -5,7 +5,7 @@ export const USER_KEYS = [
   'email',
   'hashedPassword',
   'sheets',
-  'isAdmin',
+  'role',
   'institutionPrettyName',
   'institutionServiceName',
   'firstName',
@@ -28,8 +28,8 @@ export interface User {
   hashedPassword: string;
   institutionPrettyName: string;
   institutionServiceName: string;
-  isAdmin: string;
   lastName: string;
+  role: string;
   sheets: string;
   userId: string;
 }
