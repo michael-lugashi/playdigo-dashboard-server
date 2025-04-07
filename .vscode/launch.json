@@ -6,7 +6,7 @@
       "request": "launch",
       "name": "Run with TSX",
       "runtimeExecutable": "tsx",
-      "args": ["--watch", "--env-file", ".env", "src/app.ts"],
+      "args": ["--watch", "--conditions", "development", "--env-file", ".env", "src/app.ts"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
