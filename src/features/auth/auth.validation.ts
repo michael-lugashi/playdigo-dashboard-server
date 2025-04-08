@@ -1,6 +1,5 @@
-import { MissingParameterError, ValidationError } from '#core/errors/custom.errors.js';
-import { createMiddleware } from '#core/validation/validation.services.js';
-import { z, ZodError } from 'zod';
+import { createParseBodyMiddleware, handleValidationError } from '#core/validation/validation.services.js';
+import { z } from 'zod';
 
 const authSchema = z.object({
   email: z.string().email('Please provide a valid email address'),
@@ -12,26 +11,4 @@ const authSchema = z.object({
 
 export type AuthSchema = z.infer<typeof authSchema>;
 
-/**
- * Formats Zod validation errors into readable messages and throws appropriate error types
- */
-export const validateAuth = createMiddleware(authSchema, (zodError: ZodError) => {
-  // Extract formatted error messages
-  const formattedErrors = zodError.errors.map((err) => {
-    const field = err.path.join('.');
-    return `${field}: ${err.message}`;
-  });
-
-  // Determine the error type
-  const errorMessage = formattedErrors.join(', ');
-
-  // Check if any errors are about missing fields
-  const hasMissingField = zodError.errors.some((err) => err.code === 'invalid_type' && err.received === 'undefined');
-
-  if (hasMissingField) {
-    throw new MissingParameterError(errorMessage);
-  }
-
-  // Default to generic validation error
-  throw new ValidationError(errorMessage);
-});
+export const validateAuth = createParseBodyMiddleware(authSchema, handleValidationError);

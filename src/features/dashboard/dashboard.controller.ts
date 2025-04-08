@@ -1,7 +1,9 @@
 import { getDashboardData } from '#features/dashboard/dashboard.services.js';
 import { ExpressHandler, ExpressHandlerWithToken } from '#interfaces/global.types.js';
 
-export const getDashboardDataController: ExpressHandlerWithToken<unknown, { sheetName: string }> = async (
+import { DashboardDataAdminSchema, DashboardDataSchema } from './dashboard.validation.js';
+
+export const getDashboardDataController: ExpressHandlerWithToken<unknown, DashboardDataSchema> = async (
   req,
   res,
   next
@@ -14,7 +16,7 @@ export const getDashboardDataController: ExpressHandlerWithToken<unknown, { shee
   }
 };
 
-export const getDashboardDataAdminController: ExpressHandler<unknown, { sheetName: string; userId: string }> = async (
+export const getDashboardDataAdminController: ExpressHandler<unknown, DashboardDataAdminSchema> = async (
   req,
   res,
   next
