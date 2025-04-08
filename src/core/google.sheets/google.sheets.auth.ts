@@ -1,7 +1,7 @@
 import { BaseError, GoogleSheetsUncaughtError, InternalServerError } from '#core/errors/custom.errors.js';
 import { authenticate } from '@google-cloud/local-auth';
 import fs from 'fs/promises';
-import { Auth, google } from 'googleapis';
+import { Auth, google, sheets_v4 } from 'googleapis';
 import path from 'path';
 
 // If modifying these scopes, delete token.json.
@@ -40,20 +40,50 @@ async function authorize(): Promise<Auth.OAuth2Client> {
   }
 }
 
-const loadSavedCredentialsIfExist = (() => {
+const deleteToken = async () => {
+  clearCredentialsCache();
+  await fs.unlink(TOKEN_PATH);
+};
+
+const genLoadSavedCredentialsIfExist = () => {
   let cachedCredentials: Auth.OAuth2Client | null = null;
-  return async (): Promise<Auth.OAuth2Client | null> => {
-    try {
-      if (cachedCredentials) return cachedCredentials;
-      const content = await fs.readFile(TOKEN_PATH, 'utf-8');
-      const credentials = JSON.parse(content) as Auth.JWTInput;
-      cachedCredentials = google.auth.fromJSON(credentials) as Auth.OAuth2Client;
-      return cachedCredentials;
-    } catch {
-      return null;
+  return {
+    clearCredentialsCache: () => {
+      cachedCredentials = null;
+    },
+    loadSavedCredentialsIfExist: async (): Promise<Auth.OAuth2Client | null> => {
+      try {
+        if (cachedCredentials) return cachedCredentials;
+        const content = await fs.readFile(TOKEN_PATH, 'utf-8');
+        const credentials = JSON.parse(content) as Auth.JWTInput;
+        cachedCredentials = google.auth.fromJSON(credentials) as Auth.OAuth2Client;
+        return cachedCredentials;
+      } catch {
+        return null;
+      }
     }
   };
-})();
+};
+
+const { clearCredentialsCache, loadSavedCredentialsIfExist } = genLoadSavedCredentialsIfExist();
+
+export async function googleSheetReqWrapper<T>(fn: (sheets: sheets_v4.Sheets) => Promise<T>): Promise<T> {
+  let auth = await authorize();
+  let sheets = google.sheets({ auth, version: 'v4' });
+  try {
+    return await fn(sheets);
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { error?: string } } };
+    const code = error.response?.data?.error;
+    if (code === 'invalid_grant') {
+      await deleteToken();
+      auth = await authorize();
+      sheets = google.sheets({ auth, version: 'v4' });
+      return await fn(sheets);
+    }
+    throw err;
+  }
+}
 
 async function saveCredentials(client: Auth.OAuth2Client): Promise<void> {
   const content = await fs.readFile(CREDENTIALS_PATH, 'utf-8');
@@ -70,5 +100,3 @@ async function saveCredentials(client: Auth.OAuth2Client): Promise<void> {
 
   await fs.writeFile(TOKEN_PATH, payload);
 }
-
-export default authorize;

@@ -4,9 +4,9 @@ import {
   InternalServerError,
   NotFoundError
 } from '#core/errors/custom.errors.js';
-import { google, sheets_v4 } from 'googleapis';
+import { sheets_v4 } from 'googleapis';
 
-import authorize from './google.sheets.auth.js';
+import { googleSheetReqWrapper } from './google.sheets.auth.js';
 import { CellValue, isUserData, SheetData, transformUserData, User, UserFunctions } from './google.sheets.types.js';
 
 const DATA_SHEET_ID = '1O7FYtZqZD548Pku5t6MeUfRBD6EU66G-0-ykQh2ezEE';
@@ -14,15 +14,14 @@ const USER_SHEET_ID = '1uliMkvCNzlncqH-ahh5u9QK5ebPWtXml_5r4cYPpW0g';
 
 export const getSheetData = async (sheetName: string, range: string): Promise<SheetData> => {
   try {
-    const auth = await authorize();
-    const sheets = google.sheets({ auth, version: 'v4' });
-
-    const res = await sheets.spreadsheets.get({
-      fields: 'sheets(data(rowData(values(formattedValue,effectiveValue,userEnteredFormat))))',
-      includeGridData: true,
-      ranges: [`${sheetName}!A1:${range}`],
-      spreadsheetId: DATA_SHEET_ID
-    });
+    const res = await googleSheetReqWrapper((sheets) =>
+      sheets.spreadsheets.get({
+        fields: 'sheets(data(rowData(values(formattedValue,effectiveValue,userEnteredFormat))))',
+        includeGridData: true,
+        ranges: [`${sheetName}!A1:${range}`],
+        spreadsheetId: DATA_SHEET_ID
+      })
+    );
 
     const sheet = res.data.sheets?.[0]?.data?.[0]?.rowData?.map((row) => {
       if (!row.values) {
@@ -62,12 +61,12 @@ export const generateUserFunctions = (): UserFunctions => {
     getUsers: async () => {
       if (cachedUsers) return cachedUsers;
 
-      const auth = await authorize();
-      const sheets = google.sheets({ auth, version: 'v4' });
-      const res = await sheets.spreadsheets.values.get({
-        range: 'userData!A1:I',
-        spreadsheetId: USER_SHEET_ID
-      });
+      const res = await googleSheetReqWrapper((sheets) =>
+        sheets.spreadsheets.values.get({
+          range: 'userData!A1:I',
+          spreadsheetId: USER_SHEET_ID
+        })
+      );
 
       const users = res.data.values;
       if (!users || !Array.isArray(users) || users.length < 2) {
