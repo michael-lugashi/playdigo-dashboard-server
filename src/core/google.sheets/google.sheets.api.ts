@@ -94,6 +94,12 @@ export const getUserByEmail = async (email: string): Promise<null | User> => {
   return user ?? null;
 };
 
+export const getUserById = async (userId: string): Promise<null | User> => {
+  const users = await getUsers();
+  const user = users.find((user) => user.userId === userId);
+  return user ?? null;
+};
+
 const processSheetData = (sheet: sheets_v4.Schema$CellData[][]): CellValue[][] =>
   sheet.reduce<CellValue[][]>((acc, rowData) => {
     const row = rowData.reduce<CellValue[]>((rowAcc, cell) => {
