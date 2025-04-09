@@ -1,8 +1,8 @@
-import { AuthenticationError, UncaughtError } from '#core/errors/custom.errors.js';
-import { ExpressHandler } from '#interfaces/global.types.js';
+import { AuthenticationError, UnauthorizedError, UncaughtError } from '#core/errors/custom.errors.js';
+import { ExpressHandler, JwtTokenData } from '#interfaces/global.types.js';
 import jwt from 'jsonwebtoken';
 
-export const verifyToken: ExpressHandler = (req, _res, next) => {
+export const verifyToken: ExpressHandler = (req, res, next) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
@@ -10,7 +10,8 @@ export const verifyToken: ExpressHandler = (req, _res, next) => {
       throw new AuthenticationError('Needs Login.');
     }
 
-    jwt.verify(token, process.env.JWT_AUTH_TOKEN_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_AUTH_TOKEN_SECRET) as JwtTokenData;
+    res.locals.tokenData = decoded;
     next();
   } catch (err: unknown) {
     if (!(err instanceof Error)) {
@@ -27,4 +28,15 @@ export const verifyToken: ExpressHandler = (req, _res, next) => {
         throw err;
     }
   }
+};
+
+export const verifyAdmin: ExpressHandler = (_req, res, next) => {
+  const tokenData = res.locals.tokenData;
+  if (!tokenData) {
+    throw new AuthenticationError('Needs Login.');
+  }
+  if (tokenData.role !== 'admin') {
+    throw new UnauthorizedError({ message: 'Needs Admin Access.', statusCode: 403 });
+  }
+  next();
 };
