@@ -24,6 +24,9 @@ jobs:
             cat > .env << 'EOF'
             ${{ secrets.ENV_FILE_CONTENTS }}
             EOF
+            cat > src/core/google.sheets/google.sheets.credentials.json << 'EOF'
+            ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+            EOF
             git pull origin main
             npm install
             npm run build
