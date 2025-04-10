@@ -27,12 +27,8 @@ const genGraphData = (headers: string[], sheetData: CellValue[][]): GraphData[] 
 export const getDashboardData = async (userId: string, sheetName: string): Promise<DashboardData> => {
   const user = await getUserById(userId);
   if (!user) throw new NotFoundError('User not found');
-  const sheetRange = user.sheets
-    .split(',')
-    .find((sheet) => sheet.includes(`${sheetName}!`))
-    ?.split('!')[1];
-  if (!sheetRange) throw new NotFoundError('Sheet not found');
-  const { headers, sheetData } = await getSheetData(sheetName, sheetRange);
+  if (!user.sheets.split(',').includes(sheetName)) throw new NotFoundError('Sheet not found');
+  const { headers, sheetData } = await getSheetData(sheetName);
   const graphData = genGraphData(headers, sheetData);
   return { graphData, headers, tableData: sheetData };
 };
