@@ -5,6 +5,6 @@ export const getSheetOptions = async (userId: string): Promise<string[]> => {
   const user = await getUserById(userId);
   if (!user) throw new NotFoundError('User not found');
 
-  const sheetOptions = user.sheets.split(',').map((sheet) => sheet.split('!')[0]);
+  const sheetOptions = user.sheets.split(',');
   return sheetOptions;
 };
