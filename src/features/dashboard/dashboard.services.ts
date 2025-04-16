@@ -1,7 +1,8 @@
 import { NotFoundError } from '#core/errors/custom.errors.js';
 import { CellValue } from '#core/google.sheets/google.sheets.types.js';
 
-import { getSheetData, getUserById } from '../../core/google.sheets/google.sheets.api.js';
+import { getSheetData } from '../../core/google.sheets/google.sheets.dashboard.js';
+import { getUserById } from '../../core/google.sheets/google.sheets.users.js';
 
 interface DashboardData {
   graphData: GraphData[];

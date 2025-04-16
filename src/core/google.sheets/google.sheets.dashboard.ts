@@ -7,10 +7,9 @@ import {
 import { sheets_v4 } from 'googleapis';
 
 import sheets from './google.sheets.auth.js';
-import { CellValue, isUserData, SheetData, transformUserData, User, UserFunctions } from './google.sheets.types.js';
+import { CellValue, SheetData } from './google.sheets.types.js';
 
 const DATA_SHEET_ID = '1O7FYtZqZD548Pku5t6MeUfRBD6EU66G-0-ykQh2ezEE';
-const USER_SHEET_ID = '1uliMkvCNzlncqH-ahh5u9QK5ebPWtXml_5r4cYPpW0g';
 
 export const getSheetData = async (sheetName: string): Promise<SheetData> => {
   try {
@@ -47,52 +46,6 @@ export const getSheetData = async (sheetName: string): Promise<SheetData> => {
     }
     throw new GoogleSheetsUncaughtError(error);
   }
-};
-
-export const generateUserFunctions = (): UserFunctions => {
-  let cachedUsers: null | User[] = null;
-
-  return {
-    clearUserCache: () => {
-      cachedUsers = null;
-    },
-    getUsers: async () => {
-      if (cachedUsers) return cachedUsers;
-
-      const res = await sheets.spreadsheets.values.get({
-        range: 'userData',
-        spreadsheetId: USER_SHEET_ID
-      });
-
-      const users = res.data.values;
-      if (!users || !Array.isArray(users) || users.length < 2) {
-        throw new InternalServerError('Users data is incomplete');
-      }
-
-      const [headers, ...userRows] = users;
-
-      if (!isUserData(headers)) {
-        throw new InternalServerError('Invalid headers format');
-      }
-
-      cachedUsers = userRows.map((row) => transformUserData(headers, row));
-      return cachedUsers;
-    }
-  };
-};
-
-const { getUsers } = generateUserFunctions();
-
-export const getUserByEmail = async (email: string): Promise<null | User> => {
-  const users = await getUsers();
-  const user = users.find((user) => user.email === email);
-  return user ?? null;
-};
-
-export const getUserById = async (userId: string): Promise<null | User> => {
-  const users = await getUsers();
-  const user = users.find((user) => user.userId === userId);
-  return user ?? null;
 };
 
 const processSheetData = (sheet: sheets_v4.Schema$CellData[][]): CellValue[][] =>

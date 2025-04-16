@@ -17,5 +17,15 @@ export default tseslint.config(
       }
     }
   },
-  perfectionist.configs['recommended-natural']
+  perfectionist.configs['recommended-natural'],
+  {
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          ignoreRestSiblings: true
+        }
+      ]
+    }
+  }
 );

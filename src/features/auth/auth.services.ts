@@ -1,5 +1,5 @@
 import { AuthenticationError, InternalServerError } from '#core/errors/custom.errors.js';
-import { getUserByEmail } from '#core/google.sheets/google.sheets.api.js';
+import { getUserByEmail } from '#core/google.sheets/google.sheets.users.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -16,7 +16,7 @@ export const authenticate = async (
   const tokenData = {
     institutionServiceName: user.institutionServiceName,
     role: user.role,
-    userId: user.userId
+    userId: user.id
   };
 
   const token = await new Promise<string>((resolve, reject) => {
