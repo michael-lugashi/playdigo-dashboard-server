@@ -35,11 +35,15 @@ export interface User {
 export interface UserFunctions {
   clearUserCache: () => void;
   getUsers: () => Promise<User[]>;
+  updateUser: (userId: string, key: UserKey, value: string) => Promise<void>;
 }
 
 export type UserKey = (typeof USER_KEYS)[number];
 
-export const isUserKey = (key: string): key is UserKey => USER_KEYS.includes(key as UserKey);
+export const isUserKey = (key: unknown): key is UserKey => USER_KEYS.includes(key as UserKey);
+
+export const isUserKeyArray = (data: unknown[]): data is UserKey[] =>
+  data.length === USER_KEYS.length && data.every((value) => isUserKey(value));
 
 export const isUserData = (data: unknown[]): data is string[] =>
   data.length === USER_KEYS.length && data.every((value) => typeof value === 'string');

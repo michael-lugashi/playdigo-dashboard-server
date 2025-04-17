@@ -1,17 +1,22 @@
-import { InternalServerError } from '#core/errors/custom.errors.js';
+import { InternalServerError, NotFoundError } from '#core/errors/custom.errors.js';
 
 import sheets from './google.sheets.auth.js';
-import { isUserData, isUserKey, User, UserFunctions } from './google.sheets.types.js';
+import { isUserData, isUserKey, isUserKeyArray, User, UserFunctions, UserKey } from './google.sheets.types.js';
 
 const USER_SHEET_ID = '1uliMkvCNzlncqH-ahh5u9QK5ebPWtXml_5r4cYPpW0g';
 
-export const { clearUserCache, getUsers } = ((): UserFunctions => {
+export const { clearUserCache, getUsers, updateUser } = ((): UserFunctions => {
   let cachedUsers: null | User[] = null;
+  let headerMap: Partial<Record<UserKey, string>> = {};
+  let userKeyMap: Partial<Record<string, number>> = {};
 
   return {
     clearUserCache: () => {
       cachedUsers = null;
+      headerMap = {};
+      userKeyMap = {};
     },
+
     getUsers: async () => {
       if (cachedUsers) return cachedUsers;
 
@@ -27,12 +32,47 @@ export const { clearUserCache, getUsers } = ((): UserFunctions => {
 
       const [headers, ...userRows] = users;
 
-      if (!isUserData(headers)) {
+      if (!isUserKeyArray(headers)) {
         throw new InternalServerError('Invalid headers format');
       }
 
+      headers.forEach((header, index) => {
+        headerMap[header] = String.fromCharCode(65 + index);
+      });
+
       cachedUsers = userRows.map((row) => transformUserData(headers, row));
+
+      cachedUsers.forEach((user, index) => {
+        userKeyMap[user.id] = index + 2;
+      });
+
       return cachedUsers;
+    },
+
+    updateUser: async (userId: string, key: UserKey, value: string) => {
+      const users = await getUsers();
+      const user = users.find((user) => user.id === userId);
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      const userIndex = userKeyMap[userId];
+      const headerLetter = headerMap[key];
+
+      if (userIndex === undefined || headerLetter === undefined) {
+        throw new InternalServerError('Update coordinates do not exist');
+      }
+
+      await sheets.spreadsheets.values.update({
+        range: `userData!${headerLetter}${String(userIndex)}`,
+        requestBody: {
+          values: [[value]]
+        },
+        spreadsheetId: USER_SHEET_ID,
+        valueInputOption: 'RAW'
+      });
+
+      clearUserCache();
     }
   };
 })();
