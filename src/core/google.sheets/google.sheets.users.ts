@@ -5,16 +5,12 @@ import { isUserData, isUserKey, isUserKeyArray, User, UserFunctions, UserKey } f
 
 const USER_SHEET_ID = '1uliMkvCNzlncqH-ahh5u9QK5ebPWtXml_5r4cYPpW0g';
 
-export const {
-  clearUserCache,
-  getUsers,
-  updateUserBatch,
-  updateUserValue: updateUser
-} = ((): UserFunctions => {
-  let cachedUsers: null | User[] = null;
-  let headerMap: Partial<Record<UserKey, string>> = {};
-  let userKeyMap: Partial<Record<string, number>> = {};
+// Module-level state
+let cachedUsers: null | User[] = null;
+let headerMap: Partial<Record<UserKey, string>> = {};
+let userKeyMap: Partial<Record<string, number>> = {};
 
+export const { clearUserCache, getUsers } = ((): UserFunctions => {
   return {
     clearUserCache: () => {
       cachedUsers = null;
@@ -52,64 +48,70 @@ export const {
       });
 
       return cachedUsers;
-    },
-
-    updateUserBatch: async (userId: string, updates: Partial<User>) => {
-      const users = await getUsers();
-      const user = users.find((user) => user.id === userId);
-      if (!user) {
-        throw new NotFoundError('User not found');
-      }
-
-      const userIndex = userKeyMap[userId];
-      const updateFieldsForSheets = Object.entries(updates).map(([key, value]) => {
-        const headerLetter = headerMap[key as UserKey];
-        if (userIndex === undefined || headerLetter === undefined) {
-          throw new InternalServerError('Update coordinates do not exist');
-        }
-        return {
-          range: `userData!${headerLetter}${String(userIndex)}`,
-          values: [[value]]
-        };
-      });
-
-      await sheets.spreadsheets.values.batchUpdate({
-        requestBody: {
-          data: updateFieldsForSheets,
-          valueInputOption: 'RAW'
-        },
-        spreadsheetId: USER_SHEET_ID
-      });
-
-      clearUserCache();
-    },
-    updateUserValue: async (userId: string, key: UserKey, value: string) => {
-      const users = await getUsers();
-      const user = users.find((user) => user.id === userId);
-      if (!user) {
-        throw new NotFoundError('User not found');
-      }
-
-      const userIndex = userKeyMap[userId];
-      const headerLetter = headerMap[key];
-
-      if (userIndex === undefined || headerLetter === undefined) {
-        throw new InternalServerError('Update coordinates do not exist');
-      }
-
-      await sheets.spreadsheets.values.update({
-        range: `userData!${headerLetter}${String(userIndex)}`,
-        requestBody: {
-          values: [[value]]
-        },
-        spreadsheetId: USER_SHEET_ID,
-        valueInputOption: 'RAW'
-      });
-
-      clearUserCache();
     }
   };
 })();
+
+export const updateUserBatch = async (userId: string, updates: Partial<User>): Promise<void> => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  const userIndex = userKeyMap[userId];
+  if (userIndex === undefined) {
+    throw new InternalServerError('User index not found');
+  }
+
+  const updateFieldsForSheets = Object.entries(updates).map(([key, value]) => {
+    const headerLetter = headerMap[key as UserKey];
+    if (headerLetter === undefined) {
+      throw new InternalServerError('Header letter not found');
+    }
+    return {
+      range: `userData!${headerLetter}${String(userIndex)}`,
+      values: [[value]]
+    };
+  });
+
+  await sheets.spreadsheets.values.batchUpdate({
+    requestBody: {
+      data: updateFieldsForSheets,
+      valueInputOption: 'RAW'
+    },
+    spreadsheetId: USER_SHEET_ID
+  });
+
+  clearUserCache();
+};
+
+export const updateUserValue = async (userId: string, key: UserKey, value: string): Promise<void> => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  const userIndex = userKeyMap[userId];
+  if (userIndex === undefined) {
+    throw new InternalServerError('User index not found');
+  }
+
+  const headerLetter = headerMap[key];
+  if (headerLetter === undefined) {
+    throw new InternalServerError('Header letter not found');
+  }
+
+  await sheets.spreadsheets.values.update({
+    range: `userData!${headerLetter}${String(userIndex)}`,
+    requestBody: {
+      values: [[value]]
+    },
+    spreadsheetId: USER_SHEET_ID,
+    valueInputOption: 'RAW'
+  });
+
+  clearUserCache();
+};
 
 export const createUser = async (user: User): Promise<User> => {
   const userExists = Boolean(await getUserByEmail(user.email));
