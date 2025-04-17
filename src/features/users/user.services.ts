@@ -1,15 +1,12 @@
-import { NotFoundError } from '#core/errors/custom.errors.js';
-import { getUserById, getUsers as getUsersFromSheet } from '#core/google.sheets/google.sheets.users.js';
+import { InternalServerError, NotFoundError } from '#core/errors/custom.errors.js';
+import { User, UserKey } from '#core/google.sheets/google.sheets.types.js';
+import {
+  getUserById,
+  getUsers as getUsersFromSheet,
+  updateUser as updateUserInSheet
+} from '#core/google.sheets/google.sheets.users.js';
 
-interface UIUser {
-  email: string;
-  firstName: string;
-  graphAccess: string[];
-  id: string;
-  institutionName: string;
-  lastName: string;
-  role: string;
-}
+import { UIUser } from './user.types.js';
 
 export const getSheetOptions = async (userId: string): Promise<string[]> => {
   const user = await getUserById(userId);
@@ -21,13 +18,26 @@ export const getSheetOptions = async (userId: string): Promise<string[]> => {
 
 export const getUsers = async (): Promise<UIUser[]> => {
   const users = await getUsersFromSheet();
-  const mappedUsers = users.map(
-    ({ hashedPassword, institutionPrettyName, institutionServiceName, sheets, ...rest }) => ({
-      graphAccess: sheets.split(','),
-      institutionName: institutionPrettyName,
-      ...rest
-    })
-  );
-
+  const mappedUsers = users.map(transformUser);
   return mappedUsers;
+};
+
+const transformUser = ({
+  hashedPassword,
+  institutionPrettyName,
+  institutionServiceName,
+  sheets,
+  ...rest
+}: User): UIUser => ({
+  graphAccess: sheets.split(','),
+  institutionName: institutionPrettyName,
+  ...rest
+});
+
+export const updateUser = async (userId: string, key: UserKey, value: string): Promise<UIUser> => {
+  await updateUserInSheet(userId, key, value);
+  const updatedUser = await getUserById(userId);
+  if (!updatedUser) throw new InternalServerError('Unable to get user after updating');
+  const transformedUser = transformUser(updatedUser);
+  return transformedUser;
 };
