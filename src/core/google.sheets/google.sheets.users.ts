@@ -5,7 +5,12 @@ import { isUserData, isUserKey, isUserKeyArray, User, UserFunctions, UserKey } f
 
 const USER_SHEET_ID = '1uliMkvCNzlncqH-ahh5u9QK5ebPWtXml_5r4cYPpW0g';
 
-export const { clearUserCache, getUsers, updateUser } = ((): UserFunctions => {
+export const {
+  clearUserCache,
+  getUsers,
+  updateUserBatch,
+  updateUserValue: updateUser
+} = ((): UserFunctions => {
   let cachedUsers: null | User[] = null;
   let headerMap: Partial<Record<UserKey, string>> = {};
   let userKeyMap: Partial<Record<string, number>> = {};
@@ -49,7 +54,36 @@ export const { clearUserCache, getUsers, updateUser } = ((): UserFunctions => {
       return cachedUsers;
     },
 
-    updateUser: async (userId: string, key: UserKey, value: string) => {
+    updateUserBatch: async (userId: string, updates: Partial<User>) => {
+      const users = await getUsers();
+      const user = users.find((user) => user.id === userId);
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      const userIndex = userKeyMap[userId];
+      const updateFieldsForSheets = Object.entries(updates).map(([key, value]) => {
+        const headerLetter = headerMap[key as UserKey];
+        if (userIndex === undefined || headerLetter === undefined) {
+          throw new InternalServerError('Update coordinates do not exist');
+        }
+        return {
+          range: `userData!${headerLetter}${String(userIndex)}`,
+          values: [[value]]
+        };
+      });
+
+      await sheets.spreadsheets.values.batchUpdate({
+        requestBody: {
+          data: updateFieldsForSheets,
+          valueInputOption: 'RAW'
+        },
+        spreadsheetId: USER_SHEET_ID
+      });
+
+      clearUserCache();
+    },
+    updateUserValue: async (userId: string, key: UserKey, value: string) => {
       const users = await getUsers();
       const user = users.find((user) => user.id === userId);
       if (!user) {

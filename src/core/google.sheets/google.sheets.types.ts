@@ -35,7 +35,8 @@ export interface User {
 export interface UserFunctions {
   clearUserCache: () => void;
   getUsers: () => Promise<User[]>;
-  updateUser: (userId: string, key: UserKey, value: string) => Promise<void>;
+  updateUserBatch: (userId: string, updates: Partial<User>) => Promise<void>;
+  updateUserValue: (userId: string, key: UserKey, value: string) => Promise<void>;
 }
 
 export type UserKey = (typeof USER_KEYS)[number];

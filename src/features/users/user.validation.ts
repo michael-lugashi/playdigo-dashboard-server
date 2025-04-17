@@ -14,9 +14,9 @@ const updateUserBodySchema = z
     graphAccess: z.array(z.string()).optional(),
     institutionName: z.string().min(1).max(20).optional(),
     lastName: z.string().min(3).max(20).optional(),
-    role: z.enum(['ADMIN', 'USER']).optional(),
-    updatePassword: z.boolean().optional()
+    role: z.enum(['ADMIN', 'USER']).optional()
   })
+  .strict()
   .refine(
     (data) => {
       // Ensure at least one field is provided

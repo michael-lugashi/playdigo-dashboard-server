@@ -27,9 +27,7 @@ export const updateUserController: ExpressHandlerWithToken<
   UpdateUserParamsSchema
 > = async (req, res, next) => {
   try {
-    const { userId } = req.params;
-    const { key, value } = req.body;
-    const updatedUser = await updateUser(userId, key, value);
+    const updatedUser = await updateUser(req.params.userId, req.body);
     res.json(updatedUser);
   } catch (err) {
     next(err);
