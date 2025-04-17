@@ -1,3 +1,4 @@
+import { getAllSheetNames } from '#core/google.sheets/google.sheets.dashboard.js';
 import { getSheetOptions, getUsers, updateUser } from '#features/users/user.services.js';
 import { ExpressHandlerWithToken } from '#interfaces/global.types.js';
 
@@ -29,6 +30,15 @@ export const updateUserController: ExpressHandlerWithToken<
   try {
     const updatedUser = await updateUser(req.params.userId, req.body);
     res.json(updatedUser);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllGraphOptionsController: ExpressHandlerWithToken = async (_req, res, next) => {
+  try {
+    const sheetOptions = await getAllSheetNames();
+    res.json(sheetOptions);
   } catch (err) {
     next(err);
   }

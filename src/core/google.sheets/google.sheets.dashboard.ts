@@ -82,3 +82,11 @@ const convertSerialToTimestamp = (serial: number): number => {
   const baseDate = new Date(Date.UTC(1899, 11, 30)); // Google Sheets' epoch base
   return baseDate.getTime() + serial * 86400000;
 };
+
+export const getAllSheetNames = async (): Promise<string[]> => {
+  const res = await sheets.spreadsheets.get({
+    fields: 'sheets(properties(title))',
+    spreadsheetId: DATA_SHEET_ID
+  });
+  return res.data.sheets?.map((sheet) => sheet.properties?.title ?? '') ?? [];
+};
