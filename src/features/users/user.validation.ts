@@ -1,4 +1,3 @@
-import { USER_KEYS } from '#core/google.sheets/google.sheets.types.js';
 import {
   createParseBodyMiddleware,
   createParseParamsMiddleware,
@@ -8,10 +7,25 @@ import { z } from 'zod';
 
 // Schema for updateUserController
 
-const updateUserBodySchema = z.object({
-  key: z.enum(USER_KEYS),
-  value: z.string()
-});
+const updateUserBodySchema = z
+  .object({
+    email: z.string().email().optional(),
+    firstName: z.string().min(3).max(20).optional(),
+    graphAccess: z.array(z.string()).optional(),
+    institutionName: z.string().min(1).max(20).optional(),
+    lastName: z.string().min(3).max(20).optional(),
+    role: z.enum(['ADMIN', 'USER']).optional(),
+    updatePassword: z.boolean().optional()
+  })
+  .refine(
+    (data) => {
+      // Ensure at least one field is provided
+      return Object.keys(data).length > 0;
+    },
+    {
+      message: 'At least one field must be provided for update'
+    }
+  );
 
 const updateUserParamsSchema = z.object({
   userId: z.string()

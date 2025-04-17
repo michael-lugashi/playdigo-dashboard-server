@@ -49,7 +49,7 @@ export const handleValidationError = (zodError: ZodError) => {
   // Extract formatted error messages
   const formattedErrors = zodError.errors.map((err) => {
     const field = err.path.join('.');
-    return `${field}: ${err.message}`;
+    return `${field ? `${field}: ` : ''}${err.message}`;
   });
 
   // Determine the error type
