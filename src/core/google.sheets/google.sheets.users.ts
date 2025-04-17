@@ -1,4 +1,4 @@
-import { InternalServerError, NotFoundError } from '#core/errors/custom.errors.js';
+import { ConflictError, InternalServerError, NotFoundError } from '#core/errors/custom.errors.js';
 
 import sheets from './google.sheets.auth.js';
 import { isUserData, isUserKey, isUserKeyArray, User, UserFunctions, UserKey } from './google.sheets.types.js';
@@ -110,6 +110,38 @@ export const {
     }
   };
 })();
+
+export const createUser = async (user: User): Promise<User> => {
+  const userExists = Boolean(await getUserByEmail(user.email));
+  if (userExists) {
+    throw new ConflictError('User with this email already exists');
+  }
+
+  await sheets.spreadsheets.values.append({
+    range: 'userData',
+    requestBody: {
+      values: [
+        [
+          user.id,
+          user.email,
+          user.hashedPassword,
+          user.sheets,
+          user.role,
+          user.institutionPrettyName,
+          user.institutionServiceName,
+          user.firstName,
+          user.lastName
+        ]
+      ]
+    },
+    spreadsheetId: USER_SHEET_ID,
+    valueInputOption: 'RAW'
+  });
+
+  clearUserCache();
+
+  return user;
+};
 
 export const getUserByEmail = async (email: string): Promise<null | User> => {
   const users = await getUsers();

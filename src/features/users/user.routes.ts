@@ -2,12 +2,13 @@ import { verifyAdmin } from '#features/auth/auth.middleware.js';
 import express from 'express';
 
 import {
+  createUserController,
   getAllGraphOptionsController,
   getSheetOptionsController,
   getUsersController,
   updateUserController
 } from './user.controller.js';
-import { validateUpdateUser } from './user.validation.js';
+import { validateCreateUser, validateUpdateUser } from './user.validation.js';
 
 const userRouter = express.Router();
 
@@ -18,5 +19,7 @@ userRouter.get('/all-graph-options', verifyAdmin, getAllGraphOptionsController);
 userRouter.get('/', verifyAdmin, getUsersController);
 
 userRouter.put('/:userId?', verifyAdmin, validateUpdateUser, updateUserController);
+
+userRouter.post('/create', verifyAdmin, validateCreateUser, createUserController);
 
 export default userRouter;

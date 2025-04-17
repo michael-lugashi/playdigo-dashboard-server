@@ -41,3 +41,17 @@ export const validateUpdateUser = [
 ];
 
 // Schema for updateUserController
+
+const createUserBodySchema = z.object({
+  email: z.string().email(),
+  firstName: z.string().min(3).max(20),
+  graphAccess: z.array(z.string()).min(1),
+  institutionName: z.string().min(1).max(20),
+  lastName: z.string().min(3).max(20),
+  password: z.string().min(8),
+  role: z.enum(['ADMIN', 'USER'])
+});
+
+export type CreateUserBodySchema = z.infer<typeof createUserBodySchema>;
+
+export const validateCreateUser = createParseBodyMiddleware(createUserBodySchema, handleValidationError);

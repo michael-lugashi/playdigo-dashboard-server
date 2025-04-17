@@ -1,8 +1,8 @@
 import { getAllSheetNames } from '#core/google.sheets/google.sheets.dashboard.js';
-import { getSheetOptions, getUsers, updateUser } from '#features/users/user.services.js';
+import { createUser, getSheetOptions, getUsers, updateUser } from '#features/users/user.services.js';
 import { ExpressHandlerWithToken } from '#interfaces/global.types.js';
 
-import { UpdateUserBodySchema, UpdateUserParamsSchema } from './user.validation.js';
+import { CreateUserBodySchema, UpdateUserBodySchema, UpdateUserParamsSchema } from './user.validation.js';
 
 export const getSheetOptionsController: ExpressHandlerWithToken = async (req, res, next) => {
   try {
@@ -39,6 +39,15 @@ export const getAllGraphOptionsController: ExpressHandlerWithToken = async (_req
   try {
     const sheetOptions = await getAllSheetNames();
     res.json(sheetOptions);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const createUserController: ExpressHandlerWithToken<CreateUserBodySchema> = async (req, res, next) => {
+  try {
+    const createdUser = await createUser(req.body);
+    res.json(createdUser);
   } catch (err) {
     next(err);
   }
