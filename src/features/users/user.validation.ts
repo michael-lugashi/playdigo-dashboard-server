@@ -55,3 +55,12 @@ const createUserBodySchema = z.object({
 export type CreateUserBodySchema = z.infer<typeof createUserBodySchema>;
 
 export const validateCreateUser = createParseBodyMiddleware(createUserBodySchema, handleValidationError);
+
+// Schema for updatePasswordController
+const updatePasswordBodySchema = z.object({
+  password: z.string().min(8)
+});
+
+export type UpdatePasswordBodySchema = z.infer<typeof updatePasswordBodySchema>;
+
+export const validateUpdatePassword = createParseBodyMiddleware(updatePasswordBodySchema, handleValidationError);

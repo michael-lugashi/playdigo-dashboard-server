@@ -1,8 +1,19 @@
 import { getAllSheetNames } from '#core/google.sheets/google.sheets.dashboard.js';
-import { createUser, getSheetOptions, getUsers, updateUser } from '#features/users/user.services.js';
+import {
+  createUser,
+  getSheetOptions,
+  getUsers,
+  updateUser,
+  updateUserPassword
+} from '#features/users/user.services.js';
 import { ExpressHandlerWithToken } from '#interfaces/global.types.js';
 
-import { CreateUserBodySchema, UpdateUserBodySchema, UpdateUserParamsSchema } from './user.validation.js';
+import {
+  CreateUserBodySchema,
+  UpdatePasswordBodySchema,
+  UpdateUserBodySchema,
+  UpdateUserParamsSchema
+} from './user.validation.js';
 
 export const getSheetOptionsController: ExpressHandlerWithToken = async (req, res, next) => {
   try {
@@ -48,6 +59,19 @@ export const createUserController: ExpressHandlerWithToken<CreateUserBodySchema>
   try {
     const createdUser = await createUser(req.body);
     res.json(createdUser);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updatePasswordController: ExpressHandlerWithToken<
+  UpdatePasswordBodySchema,
+  unknown,
+  UpdateUserParamsSchema
+> = async (req, res, next) => {
+  try {
+    const updatedUser = await updateUserPassword(req.params.userId, req.body.password);
+    res.json(updatedUser);
   } catch (err) {
     next(err);
   }

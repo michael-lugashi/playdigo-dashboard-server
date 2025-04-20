@@ -4,7 +4,8 @@ import {
   createUser as createUserInSheet,
   getUserById,
   getUsers as getUsersFromSheet,
-  updateUserBatch
+  updateUserBatch,
+  updateUserValue
 } from '#core/google.sheets/google.sheets.users.js';
 import { hashPassword } from '#features/auth/auth.services.js';
 import camelCase from 'lodash.camelcase';
@@ -83,5 +84,14 @@ export const createUser = async (user: CreateUserBodySchema): Promise<UIUser> =>
   };
   const createdUser = await createUserInSheet(userWithIdAndPassword);
   const transformedUser = transformToUserUI(createdUser);
+  return transformedUser;
+};
+
+export const updateUserPassword = async (userId: string, password: string): Promise<UIUser> => {
+  const hashedPassword = await hashPassword(password);
+  await updateUserValue(userId, 'hashedPassword', hashedPassword);
+  const updatedUser = await getUserById(userId);
+  if (!updatedUser) throw new InternalServerError('Unable to get user after updating password');
+  const transformedUser = transformToUserUI(updatedUser);
   return transformedUser;
 };
