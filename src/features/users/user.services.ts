@@ -2,6 +2,7 @@ import { InternalServerError, NotFoundError } from '#core/errors/custom.errors.j
 import { User } from '#core/google.sheets/google.sheets.types.js';
 import {
   createUser as createUserInSheet,
+  deleteUser as deleteUserFromSheet,
   getUserById,
   getUsers as getUsersFromSheet,
   updateUserBatch,
@@ -94,4 +95,10 @@ export const updateUserPassword = async (userId: string, password: string): Prom
   if (!updatedUser) throw new InternalServerError('Unable to get user after updating password');
   const transformedUser = transformToUserUI(updatedUser);
   return transformedUser;
+};
+
+export const deleteUser = async (userId: string): Promise<void> => {
+  const user = await getUserById(userId);
+  if (!user) throw new NotFoundError('User not found');
+  await deleteUserFromSheet(userId);
 };

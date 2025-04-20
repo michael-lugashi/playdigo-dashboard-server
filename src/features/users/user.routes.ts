@@ -3,6 +3,7 @@ import express from 'express';
 
 import {
   createUserController,
+  deleteUserController,
   getAllGraphOptionsController,
   getSheetOptionsController,
   getUsersController,
@@ -24,5 +25,7 @@ userRouter.put('/:userId?', verifyAdmin, validateUpdateUser, updateUserControlle
 userRouter.put('/:userId/password', verifyAdmin, validateUpdatePassword, updatePasswordController);
 
 userRouter.post('/create', verifyAdmin, validateCreateUser, createUserController);
+
+userRouter.delete('/:userId', verifyAdmin, deleteUserController);
 
 export default userRouter;

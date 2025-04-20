@@ -27,16 +27,16 @@ const updateUserBodySchema = z
     }
   );
 
-const updateUserParamsSchema = z.object({
+const userIdParamSchema = z.object({
   userId: z.string()
 });
 
 export type UpdateUserBodySchema = z.infer<typeof updateUserBodySchema>;
 
-export type UpdateUserParamsSchema = z.infer<typeof updateUserParamsSchema>;
+export type UpdateUserIdParamSchema = z.infer<typeof userIdParamSchema>;
 
 export const validateUpdateUser = [
-  createParseParamsMiddleware(updateUserParamsSchema, handleValidationError),
+  createParseParamsMiddleware(userIdParamSchema, handleValidationError),
   createParseBodyMiddleware(updateUserBodySchema, handleValidationError)
 ];
 

@@ -1,6 +1,7 @@
 import { getAllSheetNames } from '#core/google.sheets/google.sheets.dashboard.js';
 import {
   createUser,
+  deleteUser,
   getSheetOptions,
   getUsers,
   updateUser,
@@ -12,7 +13,7 @@ import {
   CreateUserBodySchema,
   UpdatePasswordBodySchema,
   UpdateUserBodySchema,
-  UpdateUserParamsSchema
+  UpdateUserIdParamSchema
 } from './user.validation.js';
 
 export const getSheetOptionsController: ExpressHandlerWithToken = async (req, res, next) => {
@@ -36,7 +37,7 @@ export const getUsersController: ExpressHandlerWithToken = async (req, res, next
 export const updateUserController: ExpressHandlerWithToken<
   UpdateUserBodySchema,
   unknown,
-  UpdateUserParamsSchema
+  UpdateUserIdParamSchema
 > = async (req, res, next) => {
   try {
     const updatedUser = await updateUser(req.params.userId, req.body);
@@ -67,11 +68,24 @@ export const createUserController: ExpressHandlerWithToken<CreateUserBodySchema>
 export const updatePasswordController: ExpressHandlerWithToken<
   UpdatePasswordBodySchema,
   unknown,
-  UpdateUserParamsSchema
+  UpdateUserIdParamSchema
 > = async (req, res, next) => {
   try {
     const updatedUser = await updateUserPassword(req.params.userId, req.body.password);
     res.json(updatedUser);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteUserController: ExpressHandlerWithToken<unknown, unknown, UpdateUserIdParamSchema> = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    await deleteUser(req.params.userId);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }

@@ -170,3 +170,35 @@ export const transformUserData = (headers: string[], userData: unknown[]): User 
     return acc;
   }, {} as User);
 };
+
+export const deleteUser = async (userId: string): Promise<void> => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  const userIndex = userKeyMap[userId];
+  if (userIndex === undefined) {
+    throw new InternalServerError('User index not found');
+  }
+
+  await sheets.spreadsheets.batchUpdate({
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              dimension: 'ROWS',
+              endIndex: userIndex,
+              sheetId: 0,
+              startIndex: userIndex - 1
+            }
+          }
+        }
+      ]
+    },
+    spreadsheetId: USER_SHEET_ID
+  });
+
+  clearUserCache();
+};
