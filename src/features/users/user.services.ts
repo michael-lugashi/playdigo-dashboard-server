@@ -1,8 +1,10 @@
-import { InternalServerError, NotFoundError } from '#core/errors/custom.errors.js';
+import { BadRequestError, InternalServerError, NotFoundError } from '#core/errors/custom.errors.js';
+import { getAllSheetNames } from '#core/google.sheets/google.sheets.dashboard.js';
 import { User } from '#core/google.sheets/google.sheets.types.js';
 import {
   createUser as createUserInSheet,
   deleteUser as deleteUserFromSheet,
+  getUserByEmail,
   getUserById,
   getUsers as getUsersFromSheet,
   updateUserBatch,
@@ -64,7 +66,21 @@ const transformToUserForCreation = (user: Omit<CreateUserBodySchema, 'password'>
   };
 };
 
+const validateGraphOptions = async (graphs: string[]) => {
+  const validGraphs = await getAllSheetNames();
+  graphs.forEach((graph) => {
+    if (!validGraphs.includes(graph)) throw new BadRequestError('Invalid graph options');
+  });
+};
+
 export const updateUser = async (userId: string, updates: UpdateUserBodySchema): Promise<UIUser> => {
+  if (updates.graphAccess) {
+    await validateGraphOptions(updates.graphAccess);
+  }
+  if (updates.email) {
+    const user = await getUserByEmail(updates.email);
+    if (user) throw new BadRequestError('Email already in use');
+  }
   const updateFieldsForSheets = transformToUserSheet(updates);
   await updateUserBatch(userId, updateFieldsForSheets);
   const updatedUser = await getUserById(userId);
@@ -75,6 +91,7 @@ export const updateUser = async (userId: string, updates: UpdateUserBodySchema):
 
 export const createUser = async (user: CreateUserBodySchema): Promise<UIUser> => {
   const { password, ...rest } = user;
+  await validateGraphOptions(rest.graphAccess);
   const userForSheet = transformToUserForCreation(rest);
   const hashedPassword = await hashPassword(password);
   const id = nanoid();
