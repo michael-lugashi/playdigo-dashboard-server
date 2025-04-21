@@ -35,7 +35,7 @@ export const verifyAdmin: ExpressHandler = (_req, res, next) => {
   if (!tokenData) {
     throw new AuthenticationError('Needs Login.');
   }
-  if (tokenData.role !== 'admin') {
+  if (tokenData.role !== 'ADMIN') {
     throw new UnauthorizedError({ message: 'Needs Admin Access.', statusCode: 403 });
   }
   next();

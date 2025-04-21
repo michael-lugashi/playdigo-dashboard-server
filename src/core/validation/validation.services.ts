@@ -3,7 +3,6 @@ import { MissingParameterError } from '#core/errors/custom.errors.js';
 import { ExpressHandler } from '#interfaces/global.types.js';
 import { z, ZodError } from 'zod';
 
-
 export const createParseBodyMiddleware = (
   schema: z.ZodSchema,
   errorHandlingFn: (err: ZodError) => void
@@ -32,11 +31,25 @@ export const createParseQueryMiddleware = (
   };
 };
 
+export const createParseParamsMiddleware = (
+  schema: z.ZodSchema,
+  errorHandlingFn: (err: ZodError) => void
+): ExpressHandler => {
+  return (req, _res, next) => {
+    const result = schema.safeParse(req.params);
+    if (result.success) {
+      next();
+    } else {
+      errorHandlingFn(result.error);
+    }
+  };
+};
+
 export const handleValidationError = (zodError: ZodError) => {
   // Extract formatted error messages
   const formattedErrors = zodError.errors.map((err) => {
     const field = err.path.join('.');
-    return `${field}: ${err.message}`;
+    return `${field ? `${field}: ` : ''}${err.message}`;
   });
 
   // Determine the error type

@@ -1,7 +1,5 @@
-import { InternalServerError } from '#core/errors/custom.errors.js';
-
 export const USER_KEYS = [
-  'userId',
+  'id',
   'email',
   'hashedPassword',
   'sheets',
@@ -26,12 +24,12 @@ export interface User {
   email: string;
   firstName: string;
   hashedPassword: string;
+  id: string;
   institutionPrettyName: string;
   institutionServiceName: string;
   lastName: string;
   role: string;
   sheets: string;
-  userId: string;
 }
 
 export interface UserFunctions {
@@ -41,21 +39,10 @@ export interface UserFunctions {
 
 export type UserKey = (typeof USER_KEYS)[number];
 
-export const isUserKey = (key: string): key is UserKey => USER_KEYS.includes(key as UserKey);
+export const isUserKey = (key: unknown): key is UserKey => USER_KEYS.includes(key as UserKey);
+
+export const isUserKeyArray = (data: unknown[]): data is UserKey[] =>
+  data.length === USER_KEYS.length && data.every((value) => isUserKey(value));
 
 export const isUserData = (data: unknown[]): data is string[] =>
   data.length === USER_KEYS.length && data.every((value) => typeof value === 'string');
-
-export const transformUserData = (headers: string[], userData: unknown[]): User => {
-  if (!isUserData(userData)) {
-    throw new InternalServerError('Invalid user data format');
-  }
-
-  return headers.reduce<User>((acc, header, index) => {
-    if (!isUserKey(header)) {
-      throw new InternalServerError(`Invalid header: ${header}`);
-    }
-    acc[header] = userData[index];
-    return acc;
-  }, {} as User);
-};
